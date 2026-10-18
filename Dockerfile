@@ -18,25 +18,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 4. Set container workspace
 WORKDIR /workspace
 
-# 5. Install PyTorch CPU-only wheels directly
-RUN pip install --upgrade pip && \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# Create the virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+# Activate venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python3 -m venv $VIRTUAL_ENV
 
-# 6. Install requested data science, ML, LLM, and notebook libraries
-RUN pip install \
-    numpy \
-    matplotlib \
-    jupyter \
-    notebook \
-    ipykernel \
-    "lightning>=2.4.0" \
-    "langchain>=0.3.0" \
-    "langchain-community" \
-    "optuna>=3.6.0" \
-    "mlflow>=2.17.0" \
-    "pandas>=2.0.0" \
-    "langchain-google-genai>=0.1.0"
-# 7. Expose ports: 8888 for Jupyter, 5000 for MLflow UI
+# 5. Install requested data science, ML, LLM, and notebook libraries
+RUN pip install --upgrade pip
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+# 6. Expose ports: 8888 for Jupyter, 5000 for MLflow UI
 EXPOSE 8888 5000
 
 # 8. Start interactive bash shell by default
